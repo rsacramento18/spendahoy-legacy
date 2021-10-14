@@ -1,0 +1,33 @@
+{
+  "name": "spendahoy",
+  "version": "1.0.0",
+  "description": "Simple financial app",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rsacramento18/spendahoy.git"
+  },
+  "author": "Ricardo Sacramento",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rsacramento18/spendahoy/issues"
+  },
+  "homepage": "https://github.com/rsacramento18/spendahoy#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "fast-csv": "^4.3.6",
+    "mongodb": "^4.1.1",
+    "mongoose": "^5.13.5",
+    "multer": "^1.4.3"
+  },
+  "devDependencies": {
+    "eslint": "^7.31.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-vue": "^7.14.0"
+  }
+}
