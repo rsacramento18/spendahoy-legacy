@@ -1,4 +1,5 @@
 const multer = require('multer');
+const monthExpense = require('../controllers/monthExpense.controller');
 
 module.exports = (app) => {
 
@@ -24,14 +25,13 @@ module.exports = (app) => {
 
   const upload = multer({ storage: storage, fileFilter: csvFilter });
 
-  const monthExpense = require('../controllers/monthExpense.controller');
 
   app.get('/', (req, res) => {
     return res.send("Hello World-->"+__basedir);
   });
 
   app.post('/import/mile', upload.single("file"), monthExpense.importMillenium);
-  app.post('/import/mont', upload.single("file"), monthExpense.importMontepio);
+  app.post('/import/montd', upload.single("file"), monthExpense.importMontepioDebito);
 
   app.get('/expenses', monthExpense.findAll);
 

@@ -1,64 +1,36 @@
 const fs = require('fs');
 const csv = require('fast-csv');
 const { Connection } = require('../config/database.config.js');
+const readFiles = require('../helpers/fileReader.js');
 
-exports.importMillenium = (req, res) => {
-  if(req.file == undefined ) {
-    return res.status(400).send({
-      message: "Please upload a csv to read"
-    });
+module.exports = {
+  importMillenium = (req, res) => {
+    if(req.file == undefined ) {
+      return res.status(400).send({
+        message: "Please upload a csv to read"
+      });
 
-  }
-  readFile(req, res, 'Millenium');
-};
+    }
+    readFiles.readFileMillenium(req, res, 'Millenium');
+  },
 
-exports.importMontepio = (req, res) => {
+  importMontepioDebito = (req, res) => {
 
-  if(req.file == undefined ) {
-    return res.status(400).send({
-      message: "Please upload a csv to read"
-    });
-  }
-  readFile(req, res, 'Montepio');
-};
+    if(req.file == undefined ) {
+      return res.status(400).send({
+        message: "Please upload a csv to read"
+      });
+    }
+    readFiles.readFileMontepioDebito(req, res, 'Montepio');
+  },
 
-exports.findAll = (req, res) => {
+  exports.findAll = (req, res) => {
 
-};
+  },
 
-exports.findOne = (req, res) => {
+  exports.findOne = (req, res) => {
 
-};
-
-const readFile = (req, res, account) => {
-  
-  let encoding = getEncoding(account);
-  let skipHeaders = account === 'Montepio';
-  let csvData = [];
-  let filePath = __basedir + '/uploads/' + req.file.filename;
-  fs.createReadStream(filePath, {encoding: encoding})
-    .pipe(csv.parse({
-      header:skipHeaders, 
-      delimiter: ';'
-    }))
-    .on("error", (error) => {
-      throw error.message;
-    })
-    .on("data", (row) => {
-      console.log(row);
-      if(row[4] === 'Débito' || row[4] === 'Crédito' || row[0].startsWith('2021')){
-        csvData.push(row);
-      }
-    })
-    .on("end", () => {
-      if(account === 'Millenium'){
-        let user = parseCsvMillenium(csvData);
-      }
-      else {
-        let user = parseCsvMontepio(csvData);
-      }
-      res.send(user);
-    });
+  },
 }
 
 const getEncoding = (account) => {
@@ -73,109 +45,7 @@ const getEncoding = (account) => {
 }
 
 
-const parseCsvMillenium = (data) => {
-  let month = data[0][0].split('-');
-  let monthExpense = {};
-  monthExpense.mes = getMes(month[1]);
-  monthExpense.mesNumber = month[1];
-  monthExpense.custos = {};
-  monthExpense.user = 'ricardo';
-  data.forEach(item => {
-      let row = {
-          data: item[0],
-          descricao: item[2],
-          valor: item[3],
-          tipo: item[4],
-      }
-      if(item[3].charAt(0) !== '-'){
-          let ganho = Math.abs(item[3]);
-          if(monthExpense.ganhos !== undefined) {
-              monthExpense.ganhos.total += ganho;
-          }
-          else {
-              monthExpense.ganhos = {};
-              monthExpense.ganhos.total = ganho;
-              monthExpense.ganhos.rows = [row];
-          }
-      }
-      else {
-          let categoria = findCategoria(item[2]);
-          let despesa = Math.abs(item[3]);
-          if(monthExpense.custos.total !== undefined) {
-              monthExpense.custos.total += despesa;
-          }
-          else {
-              monthExpense.custos.total = despesa;
-          }
-          if(monthExpense.custos[categoria] !== undefined){
-              monthExpense.custos[categoria].rows.push(row);
-              monthExpense.custos[categoria].despesa += despesa;
-          }
-          else { 
-              monthExpense.custos[categoria] = {};
-              monthExpense.custos[categoria].despesa = despesa;
-              monthExpense.custos[categoria].rows = [row];
-          }
-      }
 
-  });
-
-  monthExpense.sobrou = monthExpense.ganhos.total - monthExpense.custos.total;
-
-  return monthExpense;
-}
-
-const parseCsvMontepio = (data) => {
-  let month = data[0][0].split('-');
-  let monthExpense = {};
-  monthExpense.mes = getMes(month[1]);
-  monthExpense.mesNumber = month[1];
-  monthExpense.custos = {};
-  monthExpense.user = 'carolina';
-  data.forEach(item => {
-      let row = {
-          data: item[0],
-          descricao: item[2],
-          valor: item[3],
-          tipo: 'Débito',
-      }
-      if(item[3].charAt(0) !== '-'){
-          let ganho = Math.abs(item[3]);
-          if(monthExpense.ganhos !== undefined) {
-              monthExpense.ganhos.total += ganho;
-          }
-          else {
-              monthExpense.ganhos = {};
-              monthExpense.ganhos.total = ganho;
-              monthExpense.ganhos.rows = [row];
-          }
-      }
-      else {
-          let categoria = findCategoria(item[2]);
-          let despesa = Math.abs(item[3]);
-          if(monthExpense.custos.total !== undefined) {
-              monthExpense.custos.total += despesa;
-          }
-          else {
-              monthExpense.custos.total = despesa;
-          }
-          if(monthExpense.custos[categoria] !== undefined){
-              monthExpense.custos[categoria].rows.push(row);
-              monthExpense.custos[categoria].despesa += despesa;
-          }
-          else { 
-              monthExpense.custos[categoria] = {};
-              monthExpense.custos[categoria].despesa = despesa;
-              monthExpense.custos[categoria].rows = [row];
-          }
-      }
-
-  });
-
-  monthExpense.sobrou = monthExpense.ganhos.total - monthExpense.custos.total;
-
-  return monthExpense;
-}
 
 const getMes = (number) => {
     switch(number) {
