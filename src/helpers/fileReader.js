@@ -22,7 +22,7 @@ module.exports = {
           const obj = {
             date: Date(row[0]),
             description: row[2],
-            value: convertStringToNumber(row[3]),
+            value: Math.abs(row[3]),
             user: 'ricardo'
           }
           csvData.push(obj);
@@ -34,8 +34,10 @@ module.exports = {
       });
   },
 
-  readFileMontepioDebito: (req, res, account) => {
-    const encoding = getEncoding('Montepio');
+  readFileMontepioDebito: (req, res) => {
+    let account = 'Montepio';
+    if(req.file.originalFilename === 'movimientos.xls') account = 'MontepioCredito';
+    const encoding = getEncoding(account);
     const csvData = [];
     const filePath = `${basedir}/uploads/${req.file.filename}`;
     fs.createReadStream(filePath, { encoding })
@@ -49,11 +51,12 @@ module.exports = {
         throw error.message;
       })
       .on("data", (row) => {
+        console.log(row);
         if (row[0].startsWith('2021') && row[3].startsWith('-')) {
           const obj = {
             date: Date(row[0]),
             description: row[2],
-            value: convertStringToNumber(row[3]),
+            value: account === 'Montepio' ? convertStringToNumber(row[3]) : Math.abs(row[3]),
             user: 'carolina'
           }
           csvData.push(obj);
@@ -79,6 +82,8 @@ const getEncoding = (account) => {
       return "latin1";
     case "Millenium":
       return "utf-16le";
+    case "MontepioCredito":
+      return "binary";
     default:
       return "utf-8";
   }

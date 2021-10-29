@@ -1,5 +1,4 @@
 const readFiles = require("../helpers/fileReader");
-const parser = require("../helpers/parser");
 
 module.exports = {
 
@@ -15,7 +14,7 @@ module.exports = {
     if(req.file.filename.endsWith('csv'))
       readFiles.readFileMillenium(req, res);
     else 
-      readFiles.readFileMontepio(req, res);
+      readFiles.readFileMontepioDebito(req, res);
 
   },
 

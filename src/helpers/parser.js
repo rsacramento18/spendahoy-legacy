@@ -27,56 +27,20 @@ const convertStringToNumber = (str) => {
   return strConverted;
 }
 
+const categoriesGlobal = ['balu', 'casa', 'carro', 'desporto', 'levantamentos', 'multimedia',
+  'pagamentoCredito', 'restaurantes', 'saude', 'supermercado', 'outros'];
 
 const initParsedData = () => {
-  return {
-    total: 0,
-    balu: {
+  let parsedData = { total: 0};
+
+  for(const key of categoriesGlobal ) {
+    parsedData[key] = {
       total: 0,
       rows: [],
-    },
-    casa: {
-      total: 0,
-      rows: [],
-    },
-    carro: {
-      total: 0,
-      rows: [],
-    },
-    desporto: {
-      total: 0,
-      rows: [],
-    },
-    levantamentos: {
-      total: 0,
-      rows: [],
-    },
-    multimedia: {
-      total: 0,
-      rows: [],
-    },
-    pagamentoCredito: {
-      total: 0,
-      rows: [],
-    },
-    restaurantes: {
-      total: 0,
-      rows: [],
-    },
-    saude: {
-      total: 0,
-      rows: [],
-    },
-    supermercado: {
-      total: 0,
-      rows: [],
-    },
-    outros: {
-      total: 0,
-      rows: [],
-    },
+    };
 
   }
+  return parsedData;
 }
 
 const findCategory = (descricao) => {
