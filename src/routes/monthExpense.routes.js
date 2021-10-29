@@ -29,6 +29,7 @@ module.exports = (app) => {
     return res.send("Hello World-->" + basedir);
   });
 
+  app.post("/import", upload.single("file"), monthExpense.importData);
   app.post("/import/mile", upload.single("file"), monthExpense.importMillenium);
   app.post( "/import/montd", upload.single("file"), monthExpense.importMontepioDebito);
 

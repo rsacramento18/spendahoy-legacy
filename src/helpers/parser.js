@@ -1,132 +1,24 @@
+const { Connection } = require("../config/database.config");
 
 module.exports = {
-  parseCsvMillenium: (data) => {
-    const month = data[0][0].split('-');
-    const monthExpense = {};
-    monthExpense.mes = getMes(month[1]);
-    monthExpense.mesNumber = month[1];
-    monthExpense.custos = {};
-    monthExpense.user = 'ricardo';
-    data.forEach((item) => {
-      const row = {
-        data: item[0],
-        descricao: item[2],
-        valor: item[3],
-        tipo: item[4],
-      };
+  parse: (data) => {
+    let parsedData = initParsedData();
+    
+    data.sort((x1,x2) => {
+      return x1.date - x2.date
+    })
+    .forEach((item) => {
+      const category = findCategory(item.description); 
+      parsedData.total += item.value;
+      parsedData[category].total += item.value;
+      parsedData[category].rows.push(item);
 
-      if(item[4] === 'Crédito') {
-        const ganho = Math.abs(item[3]);
-        if (monthExpense.ganhos !== undefined) {
-          monthExpense.ganhos.total += ganho;
-        } else {
-          monthExpense.ganhos = {};
-          monthExpense.ganhos.total = ganho;
-          monthExpense.ganhos.rows = [row];
-        }
-      } else {
-        const categoria = findCategoria(item[2]);
-        const despesa = Math.abs(item[3]);
-        if (monthExpense.custos.total !== undefined) {
-          monthExpense.custos.total += despesa;
-        } else {
-          monthExpense.custos.total = despesa;
-        }
-        if (monthExpense.custos[categoria] !== undefined) {
-          monthExpense.custos[categoria].rows.push(row);
-          monthExpense.custos[categoria].despesa += despesa;
-        } else {
-          monthExpense.custos[categoria] = {};
-          monthExpense.custos[categoria].despesa = despesa;
-          monthExpense.custos[categoria].rows = [row];
-        }
-      }
     });
 
-    monthExpense.sobrou = monthExpense.ganhos.total - monthExpense.custos.total;
-
-    return monthExpense;
+    return parsedData;
   },
 
-  parseCsvMontepio: (data) => {
-    console.log(data);
-    const month = data[0][0].split('-');
-    const monthExpense = {};
-    monthExpense.mes = getMes(month[1]);
-    monthExpense.mesNumber = month[1];
-    monthExpense.custos = {};
-    monthExpense.user = 'carolina';
-    data.forEach((item) => {
-      const row = {
-        data: item[0],
-        descricao: item[2],
-        valor: item[3],
-        tipo: 'Débito',
-      };
-      if (item[3].charAt(0) === '-') {
-        const categoria = findCategoria(item[2]);
-        const despesa = convertStringToNumber(item[3]);
-
-        if (monthExpense.custos.total !== undefined) {
-          monthExpense.custos.total += despesa;
-        } else {
-          monthExpense.custos.total = despesa;
-        }
-        if (monthExpense.custos[categoria] !== undefined) {
-          monthExpense.custos[categoria].rows.push(row);
-          monthExpense.custos[categoria].despesa += despesa;
-        } else {
-          monthExpense.custos[categoria] = {};
-          monthExpense.custos[categoria].despesa = despesa;
-          monthExpense.custos[categoria].rows = [row];
-        }
-      } else {
-        const ganho = convertStringToNumber(item[3]);
-
-        if (monthExpense.ganhos !== undefined) {
-          monthExpense.ganhos.total += ganho;
-        } else {
-          monthExpense.ganhos = {};
-          monthExpense.ganhos.total = ganho;
-          monthExpense.ganhos.rows = [row];
-        }
-      }
-    });
-
-    monthExpense.sobrou = monthExpense.ganhos.total - monthExpense.custos.total;
-
-    return monthExpense;
-  },
 }
-
-const getMes = (number) => {
-  switch (number) {
-    case "01":
-      return "Janeiro";
-    case "02":
-      return "Fevereiro";
-    case "03":
-      return "Março";
-    case "04":
-      return "Abril";
-    case "05":
-      return "Maio";
-    case "06":
-      return "Junho";
-    case "07":
-      return "Julho";
-    case "08":
-      return "Agosto";
-    case "09":
-      return "Setembro";
-    case "10":
-      return "Outubro";
-    case "11":
-      return "Novembro";
-    case "12":
-      return "Dezembro";
-  }
-};
 
 const convertStringToNumber = (str) => {
   const strWithoutDots = str.replace('.','');
@@ -135,7 +27,59 @@ const convertStringToNumber = (str) => {
   return strConverted;
 }
 
-const findCategoria = (descricao) => {
+
+const initParsedData = () => {
+  return {
+    total: 0,
+    balu: {
+      total: 0,
+      rows: [],
+    },
+    casa: {
+      total: 0,
+      rows: [],
+    },
+    carro: {
+      total: 0,
+      rows: [],
+    },
+    desporto: {
+      total: 0,
+      rows: [],
+    },
+    levantamentos: {
+      total: 0,
+      rows: [],
+    },
+    multimedia: {
+      total: 0,
+      rows: [],
+    },
+    pagamentoCredito: {
+      total: 0,
+      rows: [],
+    },
+    restaurantes: {
+      total: 0,
+      rows: [],
+    },
+    saude: {
+      total: 0,
+      rows: [],
+    },
+    supermercado: {
+      total: 0,
+      rows: [],
+    },
+    outros: {
+      total: 0,
+      rows: [],
+    },
+
+  }
+}
+
+const findCategory = (descricao) => {
   if (descricao.includes("RIOTGAMESLI")) return "multimedia";
   if (descricao.includes("SPOTIFY")) return "multimedia";
   if (descricao.includes("STEAM")) return "multimedia";

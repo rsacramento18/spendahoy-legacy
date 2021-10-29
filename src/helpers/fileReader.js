@@ -1,18 +1,16 @@
 const fs = require("fs");
 const csv = require("fast-csv");
-const { Connection } = require("../config/database.config.js");
 const parser = require("../helpers/parser");
 
 module.exports = {
   readFileMillenium: (req, res, account) => {
-    const encoding = getEncoding(account);
-    const skipHeaders = account === "Montepio";
+    const encoding = getEncoding('Millenium');
     const csvData = [];
     const filePath = `${basedir}/uploads/${req.file.filename}`;
     fs.createReadStream(filePath, { encoding })
       .pipe(
         csv.parse({
-          header: skipHeaders,
+          header: false,
           delimiter: ";",
         })
       )
@@ -20,23 +18,30 @@ module.exports = {
         throw error.message;
       })
       .on("data", (row) => {
-        if (row[4] === "Débito" || row[4] === "Crédito") csvData.push(row);
+        if (row[4] === "Débito") { 
+          const obj = {
+            date: Date(row[0]),
+            description: row[2],
+            value: convertStringToNumber(row[3]),
+            user: 'ricardo'
+          }
+          csvData.push(obj);
+        }
       })
       .on("end", () => {
-        const user = parser.parseCsvMillenium(csvData);
-        res.send(user);
+        const parsedData = parser.parse(csvData);
+        res.send(parsedData);
       });
   },
 
   readFileMontepioDebito: (req, res, account) => {
-    const encoding = getEncoding(account);
-    const skipHeaders = account === "Montepio";
+    const encoding = getEncoding('Montepio');
     const csvData = [];
     const filePath = `${basedir}/uploads/${req.file.filename}`;
     fs.createReadStream(filePath, { encoding })
       .pipe(
         csv.parse({
-          header: skipHeaders,
+          header: true,
           delimiter: "\t",
         })
       )
@@ -44,14 +49,29 @@ module.exports = {
         throw error.message;
       })
       .on("data", (row) => {
-        if (row[0].startsWith('2021')) csvData.push(row);
+        if (row[0].startsWith('2021') && row[3].startsWith('-')) {
+          const obj = {
+            date: Date(row[0]),
+            description: row[2],
+            value: convertStringToNumber(row[3]),
+            user: 'carolina'
+          }
+          csvData.push(obj);
+        }
       })
       .on("end", () => {
-        const user = parser.parseCsvMontepio(csvData);
-        res.send(user);
+        const parsedData = parser.parse(csvData);
+        res.send(parsedData);
       });
   },
 };
+
+const convertStringToNumber = (str) => {
+  const strWithoutDots = str.replace('.','');
+  const strWithDots = strWithoutDots.replace(',','.');
+  const strConverted = Math.abs(strWithDots);
+  return strConverted;
+}
 
 const getEncoding = (account) => {
   switch (account) {
