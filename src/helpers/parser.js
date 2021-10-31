@@ -2,17 +2,21 @@ const { Connection } = require("../config/database.config");
 
 module.exports = {
   parse: (data) => {
-    let parsedData = initParsedData();
+    let parsedData = {};
     
     data.sort((x1,x2) => {
       return x1.date - x2.date
     })
     .forEach((item) => {
-      const category = findCategory(item.description); 
-      parsedData.total += item.value;
-      parsedData[category].total += item.value;
-      parsedData[category].rows.push(item);
+      const date = getMonthAndYear(item.date);
+      if ( !parsedData[date] ) {
+        parsedData[date] = initParsedData();
+      }
 
+      const category = findCategory(item.description); 
+      parsedData[date].total += item.value;
+      parsedData[date][category].total += item.value;
+      parsedData[date][category].rows.push(item);
     });
 
     return parsedData;
@@ -20,12 +24,16 @@ module.exports = {
 
 }
 
+const getMonthAndYear = (date) => {
+  return date.getMonth() + '-' + date.getYear();
+};
+
 const convertStringToNumber = (str) => {
   const strWithoutDots = str.replace('.','');
   const strWithDots = strWithoutDots.replace(',','.');
   const strConverted = Math.abs(strWithDots);
   return strConverted;
-}
+};
 
 const categoriesGlobal = ['balu', 'casa', 'carro', 'desporto', 'levantamentos', 'multimedia',
   'pagamentoCredito', 'restaurantes', 'saude', 'supermercado', 'outros'];
@@ -41,7 +49,7 @@ const initParsedData = () => {
 
   }
   return parsedData;
-}
+};
 
 const findCategory = (descricao) => {
   if (descricao.includes("RIOTGAMESLI")) return "multimedia";
